@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<!-- 用户的xml文件-->
+<mapper namespace="com.study.mapper.UserMapper">
+
+    <resultMap id="userModelResultMap" type="com.study.common.user.entity.UserModel">
+        <result column="user_name" property="userName"/>
+        <collection property="roleModelList" ofType="com.study.common.role.entity.RoleModel">
+            <result column="role_name" property="roleName"/>
+        </collection>
+    </resultMap>
+<!--    <resultMap id="userResultMap" type="com.study.common.user.entity.UserModel">-->
+<!--        <result column="user_name" property="userName"/>-->
+<!--        <collection property="roleModelList" ofType="com.study.common.role.entity.RoleModel">-->
+<!--            <id column="role_id" property="roleId"/>-->
+<!--            <result column="role_name" property="roleName"/>-->
+<!--            <collection property="authModelList" ofType="com.study.common.auth.entity.AuthModel" />-->
+<!--                <result column="auth_name" property="authName"/>-->
+<!--        </collection>-->
+<!--    </resultMap>-->
+    <insert id="batchInsertUserModel" parameterType="com.study.common.user.dto.UserQuery">
+        INSERT INTO t_user
+            (user_name,sex)
+        VALUES
+        <foreach collection="userQueryList" item="userQuery" index="index" separator=",">
+            (#{userQuery.userName},#{userQuery.sex})
+        </foreach>
+    </insert>
+
+    <!-- 根据userIds批量删除-->
+    <update id="batchDeleteUserModel" parameterType="java.util.List">
+        UPDATE t_user SET del_flag = 0 where user_id in
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </update>
+
+    <!--查询所有-->
+    <select id="selectAllUser" resultType="com.study.common.user.entity.UserModel"
+    parameterType="com.study.common.user.dto.UserQuery">
+        select
+            u.user_id  as uId,
+            u.user_name as userName,
+            u.sex as sex,
+            DATE_FORMAT(u.birthday, '%Y-%m-%d %H:%i:%s') as birthday,
+            DATE_FORMAT(u.create_date, '%Y-%m-%d %H:%i:%s') as createDate,
+            DATE_FORMAT(u.update_date, '%Y-%m-%d %H:%i:%s') as updateDate,
+            del_flag as delFlag
+        from
+            t_user as u
+    </select>
+
+    <!-- 根据用户名查询对应的角色-->
+    <select id="selectUserAndRole" resultMap="userModelResultMap"
+            parameterType="com.study.common.user.dto.UserQuery">
+        SELECT u.`user_name`, r.role_name  FROM t_user AS u
+        LEFT JOIN t_user_role AS tur
+        ON u.`user_id` = tur.`user_id`
+        LEFT JOIN t_role r
+        ON r.`role_id` = tur.`role_id`
+        <where>
+            <if test="userName != null and userName != ''">
+                u.`user_name` = #{userName}
+            </if>
+        </where>
+    </select>
+    <select id="selectUserModelByPageHelper" resultType="com.study.common.user.entity.UserModel">
+        select
+            u.user_id  as uId,
+            u.user_name as userName,
+            u.sex as sex,
+            DATE_FORMAT(u.birthday, '%Y-%m-%d %H:%i:%s') as birthday,
+            DATE_FORMAT(u.create_date, '%Y-%m-%d %H:%i:%s') as createDate,
+            DATE_FORMAT(u.update_date, '%Y-%m-%d %H:%i:%s') as updateDate,
+            del_flag as delFlag
+        from
+            t_user as u
+    </select>
+<!--    <select id="selectUserAndRoleAndAuth" resultMap="userResultMap">-->
+<!--        SELECT u.`user_name`, r.role_name, a.`auth_name`  FROM t_user AS u-->
+<!--        LEFT JOIN t_user_role AS tur-->
+<!--              ON u.`user_id` = tur.`user_id`-->
+<!--        LEFT JOIN t_role r-->
+<!--              ON r.`role_id` = tur.`role_id`-->
+<!--        LEFT JOIN t_role_auth AS ra-->
+<!--             ON r.`role_id` = ra.`role_id`-->
+<!--        LEFT JOIN t_auth a-->
+<!--             ON a.`auth_id` = ra.`auth_id`-->
+<!--        <where>-->
+<!--            <if test="userName != null and userName != ''">-->
+<!--                u.`user_name` = #{userName}-->
+<!--            </if>-->
+<!--        </where>-->
+<!--    </select>-->
+</mapper>

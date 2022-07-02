@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.mapper.RoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.study.common.role.entity.RoleModel">
+            <id property="roleId" column="role_id" jdbcType="INTEGER"/>
+            <result property="roleName" column="role_name" jdbcType="VARCHAR"/>
+            <collection property="authModelList" ofType="com.study.common.auth.entity.AuthModel">
+                <result column="auth_name" property="authName" />
+            </collection>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        role_id,role_name,create_date,
+        update_date
+    </sql>
+    <insert id="batchInsertRoleModel" parameterType="java.util.List">
+        INSERT INTO t_role
+        (role_name)
+        VALUES
+        <foreach collection ="roleQueryList" item="roleQuery" separator =",">
+            (#{roleQuery.roleName})
+        </foreach >
+    </insert>
+
+    <select id="selectRolesByPageHelper" resultType="com.study.common.role.entity.RoleModel">
+        select <include refid="Base_Column_List" />
+        from t_role
+    </select>
+    <select id="selectRoleAndAuth" resultMap="BaseResultMap"
+    parameterType="com.study.common.role.dto.RoleQuery">
+        SELECT r.`role_name`, a.auth_name  FROM t_role AS r
+        LEFT JOIN t_role_auth AS ra
+        ON r.`role_id` = ra.`role_id`
+        LEFT JOIN t_auth a
+        ON a.`auth_id` = ra.`auth_id`
+        <where>
+            <if test="roleName != null and roleName != ''">
+                r.`role_name` = #{roleName}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.mapper.AuthMapper">
+
+    <resultMap id="BaseResultMap" type="com.study.common.auth.entity.AuthModel">
+            <id property="authId" column="auth_id" jdbcType="INTEGER"/>
+            <result property="authName" column="auth_name" jdbcType="VARCHAR"/>
+            <result property="createDate" column="create_date" jdbcType="TIMESTAMP"/>
+            <result property="updateDate" column="update_date" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        auth_id,auth_name,create_date,
+        update_date
+    </sql>
+    <!-- 批量添加-->
+    <insert id="batchInsertAuthModel">
+        INSERT INTO t_auth
+        (auth_name)
+        VALUES
+        <foreach collection ="authQueryList" item="authQuery" separator =",">
+            (#{authQuery.authName})
+        </foreach >
+    </insert>
+    <delete id="batchDeleteAuthModel">
+
+    </delete>
+    <!--查询所有并分页-->
+    <select id="selectAuthByPageHelper" resultType="com.study.common.auth.entity.AuthModel">
+        select <include refid="Base_Column_List" />
+        from t_auth
+    </select>
+</mapper>
